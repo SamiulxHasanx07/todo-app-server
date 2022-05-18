@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
 const app = express();
@@ -20,7 +20,7 @@ async function run() {
 
         // get all data
         app.get('/todos', async (req, res) => {
-            const result =  await todoCollections.find({}).toArray();
+            const result = await todoCollections.find({}).toArray();
             res.send(result)
         })
 
@@ -31,11 +31,37 @@ async function run() {
         //     "des":"Need to complete web development project"
         // }
         // Add todo post api
-        app.post('/todos', async(req, res)=>{
-            const data =  req.body;
+        app.post('/todos', async (req, res) => {
+            const data = req.body;
+            console.log(data);
+            
             const insert = await todoCollections.insertOne(data);
             res.send(insert)
         })
+
+
+        // delete api
+        app.delete('/todos/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const result = await todoCollections.deleteOne(filter);
+            res.send(result)
+        })
+
+        // patch api 
+        app.patch('/todos/:id', async(req, res)=>{
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set:{
+                    status:'completed'
+                }
+            }
+            const result = await todoCollections.updateOne(filter, updateDoc);
+            res.send(result)
+        })
+
+
 
     } finally {
 
